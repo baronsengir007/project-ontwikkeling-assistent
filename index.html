@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projectontwikkeling Assistent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .chat-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            width: 100%;
+            max-width: 750px;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        .chat-header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+        
+        .chat-header p {
+            font-size: 1rem;
+            opacity: 0.95;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 25px;
+            background: #f8f9fa;
+        }
+        
+        .message {
+            margin-bottom: 20px;
+            animation: fadeIn 0.4s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .message.bot {
+            text-align: left;
+        }
+        
+        .message.user {
+            text-align: right;
+        }
+        
+        .message-content {
+            display: inline-block;
+            padding: 14px 20px;
+            border-radius: 20px;
+            max-width: 85%;
+            line-height: 1.5;
+        }
+        
+        .bot .message-content {
+            background: white;
+            color: #333;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+        }
+        
+        .user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .options-container {
+            margin-top: 15px;
+        }
+        
+        .option-button {
+            display: block;
+            width: 100%;
+            padding: 14px 22px;
+            margin: 8px 0;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            color: #667eea;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+        
+        .option-button:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .option-button.neutral {
+            border-color: #6c757d;
+            color: #6c757d;
+        }
+        
+        .option-button.neutral:hover {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .process-indicator {
+            background: linear-gradient(135deg, #f5f7ff 0%, #f0f2ff 100%);
+            padding: 18px;
+            border-radius: 12px;
+            margin: 15px 0;
+            border-left: 4px solid #667eea;
+        }
+        
+        .process-indicator h3 {
+            color: #667eea;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+        
+        .action-required {
+            background: #fffbf0;
+            border: 2px solid #f0b429;
+            padding: 16px;
+            border-radius: 12px;
+            margin: 15px 0;
+            color: #856404;
+        }
+        
+        .action-required strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.05rem;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            padding: 14px;
+            border-radius: 8px;
+            margin: 10px 0;
+            color: #856404;
+        }
+        
+        .info-box {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            padding: 14px;
+            border-radius: 8px;
+            margin: 10px 0;
+            color: #0c5460;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin: 12px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 4px;
+            transition: width 0.6s ease;
+            width: 0%;
+        }
+        
+        .step-indicator {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>Projectontwikkeling Assistent</h1>
+            <p>Uw digitale begeleider door het complete projectproces</p>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <!-- Messages will appear here -->
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentStep = null;
+        let projectType = null;
+        let progress = 0;
+        let currentPhase = 1;
+        let responses = {};
+
+        // Complete process flow based on Excel
+        const processFlow = {
+            // START - Financieringstype
+            financing: {
+                message: "Welkom bij de Projectontwikkeling Assistent! 🚀\n\nLaten we beginnen met het type financiering voor je project.",
+                question: "Welke financieringstype gaat het om?",
+                options: [
+                    { text: "B2B", value: "b2b", next: "lead1" },
+                    { text: "Rijksbijdrage", value: "rijksbijdrage", next: "lead1" },
+                    { text: "Gemengd", value: "gemengd", next: "lead1" },
+                    { text: "EU", value: "eu", next: "lead1" }
+                ]
+            },
+
+            // FASE 1: Lead registeren
+            lead1: {
+                phase: "1. Lead registeren",
+                question: "Is de lead geregistreerd in Dynamo?",
+                options: [
+                    { text: "Ja", value: "ja", next: "lead2" },
+                    { text: "Nee", value: "nee", action: "registerLead", next: "lead2" }
+                ]
+            },
+            
+            lead2: {
+                question: "Is de projectmanager aangewezen in Dynamo?",
+                options: [
+                    { text: "Ja", value: "ja", next: "lead3" },
+                    { text: "Nee", value: "nee", action: "assignPM", next: "lead3" }
+                ]
+            },
+            
+            lead3: {
+                question: "Is het projectteam aangewezen in Dynamo met de benodigde kennis?",
+                options: [
+                    { text: "Ja", value: "ja", next: "opportunity1" },
+                    { text: "Nee", value: "nee", action: "assignTeam", next: "opportunity1" }
+                ]
+            },
+
+            // FASE 2: Opportunity complementeren
+            opportunity1: {
+                phase: "2. Opportunity complementeren",
+                question: "Past de projectvraag bij de propositie/PMC in Dynamo?",
+                options: [
+                    { text: "Ja", value: "ja", next: "opportunity2" },
+                    { text: "Nee", value: "nee", action: "alignProposition", next: "opportunity2" }
+                ]
+            },
+            
+            opportunity2: {
+                question: "Is het budget opgesteld?",
+                options: [
+                    { text: "Ja", value: "ja", next: "opportunity3" },
+                    { text: "Nee", value: "nee", action: "createBudget", next: "opportunity3" }
+                ]
+            },
+            
+            opportunity3: {
+                question: "Is het acquisitiebudget opgesteld?",
+                options: [
+                    { text: "Ja", value: "ja", next: "opportunity4" },
+                    { text: "Nee", value: "nee", action: "createAcquisitionBudget", next: "opportunity4" }
+                ]
+            },
+            
+            opportunity4: {
+                question: "Is de verkoopprijs afgestemd met DM (Director/Market Manager)?",
+                options: [
+                    { text: "Ja", value: "ja", next: "opportunity5" },
+                    { text: "Nee", value: "nee", action: "alignPrice", next: "opportunity5" }
+                ]
+            },
+            
+            opportunity5: {
+                question: "Heb je de (key)accountmanager geïnformeerd over dit project?",
+                options: [
+                    { text: "Ja", value: "ja", next: "compliance1" },
+                    { text: "Nee", value: "nee", action: "informAccountManager", next: "compliance1" }
+                ]
+            },
+
+            // FASE 3: Wet- en regelgeving
+            compliance1: {
+                phase: "3. Wet- en regelgeving",
+                question: "Is exporteren van dual-use technology van toepassing?",
+                options: [
+                    { text: "Ja", value: "ja", action: "secForm", next: "compliance2" },
+                    { text: "Nee", value: "nee", next: "compliance2" }
+                ]
+            },
+            
+            compliance2: {
+                question: "Zijn er bijzondere projecteisen volgens de wet- en regelgeving checklist (blz. 35)?",
+                options: [
+                    { text: "Ja", value: "ja", action: "checkSpecialRequirements", next: "compliance3" },
+                    { text: "Nee", value: "nee", next: "compliance3" }
+                ]
+            },
+            
+            compliance3: {
+                question: "Zijn er privacy-gevoelige informatie/onderwerpen?",
+                options: [
+                    { text: "Ja", value: "ja", action: "dpia", next: "compliance4" },
+                    { text: "Nee", value: "nee", next: "compliance4" }
+                ]
+            },
+            
+            compliance4: {
+                question: "Ga je werken met Data?",
+                options: [
+                    { text: "Ja", value: "ja", action: "dmp", next: "compliance5" },
+                    { text: "Nee", value: "nee", next: "compliance5" }
+                ]
+            },
+            
+            compliance5: {
+                question: "Is NGWI (Nederlandse Gedragscode Wetenschappelijke Integriteit) van toepassing?",
+                options: [
+                    { text: "Ja", value: "ja", action: "ngwi", next: "compliance6" },
+                    { text: "Nee", value: "nee", next: "compliance6" }
+                ]
+            },
+            
+            compliance6: {
+                question: "Is BRRD (Bank Recovery and Resolution Directive) van toepassing?",
+                options: [
+                    { text: "Ja", value: "ja", action: "brrd", next: "compliance7" },
+                    { text: "Nee", value: "nee", next: "compliance7" }
+                ]
+            },
+            
+            compliance7: {
+                question: "Is er andere specifieke wet- en regelgeving van toepassing op jouw project?",
+                options: [
+                    { text: "Ja", value: "ja", action: "complianceAdvice", next: "bidnobid" },
+                    { text: "Nee", value: "nee", next: "bidnobid" },
+                    { text: "Weet niet", value: "weet niet", action: "complianceAdvice", next: "bidnobid" }
+                ]
+            },
+
+            // FASE 3.5: Bid/No bid besluit
+            bidnobid: {
+                phase: "3. Bid/No bid besluit",
+                question: "Is de bid/no-bid beslissing voorbereid? (duidelijkheid over budget, complexiteit, globaal risico, beslisser, behoefte van de klant, tijd)",
+                options: [
+                    { text: "Ja", value: "ja", next: "proposal1" },
+                    { text: "Nee", value: "nee", action: "prepareBidDecision", next: "proposal1" }
+                ]
+            },
+
+            // FASE 4: Voorstel
+            proposal1: {
+                phase: "4. Voorstel uitbrengen",
+                question: "Worden de standaard Algemene Voorwaarden gebruikt?",
+                options: [
+                    { text: "Ja", value: "ja", next: "proposal2" },
+                    { text: "Nee", value: "nee", action: "legalContracting", next: "proposal2" }
+                ]
+            },
+            
+            proposal2: {
+                question: "Is het duidelijk wie het projectvoorstel gaat schrijven?",
+                options: [
+                    { text: "Ja", value: "ja", next: "proposal3" },
+                    { text: "Nee", value: "nee", action: "assignProposalWriter", next: "proposal3" }
+                ]
+            },
+            
+            proposal3: {
+                question: "Gebruik je het projectvoorstel template?",
+                options: [
+                    { text: "Ja", value: "ja", next: "proposal4" },
+                    { text: "Nee", value: "nee", action: "getTemplate", next: "proposal4" }
+                ]
+            },
+            
+            proposal4: {
+                question: "Is het doel geschreven in inspanningsverplichting?",
+                options: [
+                    { text: "Ja", value: "ja", next: "proposal5" },
+                    { text: "Nee", value: "nee", action: "checkObligationType", next: "proposal5" },
+                    { text: "Weet niet", value: "weet niet", action: "legalContractingAdvice", next: "proposal5" }
+                ]
+            },
+            
+            proposal5: {
+                question: "Is capaciteit in voorstel opgenomen en afgestemd met Resource Manager?",
+                options: [
+                    { text: "Ja", value: "ja", next: "proposal6" },
+                    { text: "Nee", value: "nee", action: "alignCapacity", next: "proposal6" },
+                    { text: "Weet niet", value: "weet niet", action: "checkCapacity", next: "proposal6" }
+                ]
+            },
+            
+            proposal6: {
+                question: "Is prijsstelling in offerte beoordeeld door Control/DM?",
+                options: [
+                    { text: "Ja", value: "ja", next: "complete" },
+                    { text: "Nee", value: "nee", action: "pricingReview", next: "complete" },
+                    { text: "Weet niet", value: "weet niet", action: "checkPricing", next: "complete" }
+                ]
+            },
+
+            // Complete
+            complete: {
+                phase: "✅ Voorstel Gereed",
+                message: "Uitstekend! Je hebt alle stappen doorlopen. Het projectvoorstel kan nu worden ingediend.",
+                final: true
+            }
+        };
+
+        // Action definitions
+        const actions = {
+            // Lead registratie acties
+            registerLead: {
+                title: "Lead Registreren in Dynamo",
+                steps: [
+                    "Open Dynamo systeem",
+                    "Ga naar 'Nieuwe Lead/Opportunity'",
+                    "Vul alle verplichte velden in",
+                    "Sla op en noteer het leadnummer"
+                ]
+            },
+            assignPM: {
+                title: "Projectmanager Aanwijzen",
+                steps: [
+                    "Overleg met Director/Division Manager",
+                    "Bepaal geschikte projectmanager",
+                    "Wijs toe in Dynamo",
+                    "Informeer projectmanager"
+                ]
+            },
+            assignTeam: {
+                title: "Projectteam Samenstellen",
+                steps: [
+                    "Identificeer benodigde competenties",
+                    "Check beschikbaarheid teamleden",
+                    "Wijs team toe in Dynamo",
+                    "Plan kick-off meeting"
+                ]
+            },
+
+            // Opportunity acties
+            alignProposition: {
+                title: "Propositie Afstemmen",
+                steps: [
+                    "Check propositie/PMC in Dynamo",
+                    "Analyseer projectvraag",
+                    "Stem af met Business Developer",
+                    "Update in Dynamo indien nodig"
+                ]
+            },
+            createBudget: {
+                title: "Budget Opstellen",
+                steps: [
+                    "Maak inschatting van uren per fase",
+                    "Bereken materiaalkosten",
+                    "Voeg externe kosten toe",
+                    "Laat reviewen door Control"
+                ]
+            },
+            createAcquisitionBudget: {
+                title: "Acquisitiebudget Bepalen",
+                steps: [
+                    "Bepaal acquisitie-inspanning",
+                    "Bereken acquisitiekosten",
+                    "Vraag goedkeuring bij DM",
+                    "Registreer in Dynamo"
+                ]
+            },
+            alignPrice: {
+                title: "Verkoopprijs Afstemmen",
+                steps: [
+                    "Bereken kostprijs",
+                    "Bepaal marge volgens richtlijnen",
+                    "Bespreek met Director/Market Manager",
+                    "Documenteer goedkeuring"
+                ]
+            },
+            informAccountManager: {
+                title: "Account Manager Informeren",
+                steps: [
+                    "Identificeer (key) account manager",
+                    "Plan overleg",
+                    "Deel projectinformatie",
+                    "Noteer feedback in Dynamo"
+                ]
+            },
+
+            // Compliance acties
+            secForm: {
+                title: "SEC-formulier Invullen",
+                warning: "Dual-use technology export control van toepassing!",
+                steps: [
+                    "Download SEC-formulier",
+                    "Vul alle velden volledig in",
+                    "Laat controleren door Export Control Officer",
+                    "Archiveer in projectdossier"
+                ]
+            },
+            checkSpecialRequirements: {
+                title: "Bijzondere Eisen Controleren",
+                steps: [
+                    "Raadpleeg checklist blz. 35",
+                    "Identificeer van toepassing zijnde eisen",
+                    "Documenteer in projectdossier",
+                    "Informeer projectteam"
+                ]
+            },
+            dpia: {
+                title: "DPIA Uitvoeren",
+                warning: "Privacy-gevoelige informatie gedetecteerd!",
+                steps: [
+                    "Start DPIA procedure",
+                    "Vul DPIA template in",
+                    "Laat beoordelen door Privacy Officer",
+                    "Implementeer aanbevelingen"
+                ]
+            },
+            dmp: {
+                title: "Data Management Plan Opstellen",
+                steps: [
+                    "Gebruik DMP template",
+                    "Beschrijf data verzameling en opslag",
+                    "Definieer data governance",
+                    "Laat goedkeuren door Data Steward"
+                ]
+            },
+            ngwi: {
+                title: "NGWI Compliance",
+                steps: [
+                    "Check NGWI richtlijnen",
+                    "Zorg voor wetenschappelijke integriteit",
+                    "Documenteer onderzoeksprotocol",
+                    "Informeer onderzoeksteam"
+                ]
+            },
+            brrd: {
+                title: "BRRD Advies",
+                steps: [
+                    "Vraag BRRD advies aan",
+                    "Wacht op beoordeling",
+                    "Implementeer aanbevelingen",
+                    "Documenteer compliance"
+                ]
+            },
+            complianceAdvice: {
+                title: "Compliance Advies Vragen",
+                steps: [
+                    "Contacteer Legal/Compliance",
+                    "Beschrijf projectspecifieke aspecten",
+                    "Wacht op advies",
+                    "Implementeer aanbevelingen"
+                ]
+            },
+
+            // Bid/No-bid acties
+            prepareBidDecision: {
+                title: "Bid/No-bid Beslissing Voorbereiden",
+                steps: [
+                    "Analyseer projectcomplexiteit",
+                    "Identificeer risico's",
+                    "Bepaal resource behoefte",
+                    "Maak go/no-go advies",
+                    "Plan beslismoment met DM"
+                ]
+            },
+
+            // Voorstel acties
+            legalContracting: {
+                title: "Legal Contracting Inschakelen",
+                warning: "Afwijkende voorwaarden!",
+                steps: [
+                    "Contacteer Legal Contracting",
+                    "Deel klantvoorwaarden",
+                    "Wacht op juridisch advies",
+                    "Verwerk in voorstel"
+                ]
+            },
+            assignProposalWriter: {
+                title: "Voorstelschrijver Aanwijzen",
+                steps: [
+                    "Overleg met BD/Opportunity Manager",
+                    "Bepaal wie voorstel schrijft",
+                    "Maak planning",
+                    "Deel relevante informatie"
+                ]
+            },
+            getTemplate: {
+                title: "Template Gebruiken",
+                steps: [
+                    "Download projectvoorstel template",
+                    "Kies juiste template voor projecttype",
+                    "Pas aan voor specifieke situatie"
+                ]
+            },
+            checkObligationType: {
+                title: "Type Verplichting Controleren",
+                steps: [
+                    "Check of inspanningsverplichting juist is",
+                    "Bij resultaatverplichting: overleg met Legal",
+                    "Pas formulering aan indien nodig"
+                ]
+            },
+            legalContractingAdvice: {
+                title: "Legal Advies Vragen",
+                steps: [
+                    "Contacteer Legal Contracting",
+                    "Leg situatie uit",
+                    "Wacht op advies",
+                    "Pas voorstel aan"
+                ]
+            },
+            alignCapacity: {
+                title: "Capaciteit Afstemmen",
+                steps: [
+                    "Check beschikbaarheid team",
+                    "Overleg met Resource Manager",
+                    "Update capaciteitsplanning",
+                    "Verwerk in voorstel"
+                ]
+            },
+            checkCapacity: {
+                title: "Capaciteit Verifiëren",
+                steps: [
+                    "Controleer of capaciteit is opgenomen",
+                    "Verifieer bij Resource Manager",
+                    "Update indien nodig"
+                ]
+            },
+            pricingReview: {
+                title: "Prijsstelling Laten Beoordelen",
+                steps: [
+                    "Deel calculatie met Control",
+                    "Bespreek met Director/Market Manager",
+                    "Krijg formele goedkeuring",
+                    "Documenteer besluit"
+                ]
+            },
+            checkPricing: {
+                title: "Prijsstelling Controleren",
+                steps: [
+                    "Verifieer of pricing is beoordeeld",
+                    "Check bij Control/DM",
+                    "Alsnog laten beoordelen indien nodig"
+                ]
+            }
+        };
+
+        // Initialize chat
+        function init() {
+            showStep('financing');
+        }
+
+        // Show step
+        function showStep(stepName) {
+            const step = processFlow[stepName];
+            
+            // Show phase indicator if new phase
+            if (step.phase) {
+                showPhaseIndicator(step.phase);
+            }
+            
+            // Show final message if complete
+            if (step.final) {
+                updateProgress(100);
+                showProgressBar();
+                addBotMessage(`<strong>${step.phase}</strong><br><br>${step.message}`);
+                showCompletionOptions();
+                return;
+            }
+            
+            // Show question
+            if (step.message) {
+                addBotMessage(step.message);
+            }
+            
+            setTimeout(() => {
+                addBotMessage(step.question);
+                showOptions(step.options, stepName);
+            }, step.message ? 1500 : 500);
+        }
+
+        // Show phase indicator
+        function showPhaseIndicator(phase) {
+            const phaseDiv = document.createElement('div');
+            phaseDiv.className = 'message bot';
+            phaseDiv.innerHTML = `
+                <div class="message-content">
+                    <div class="step-indicator">📌 ${phase}</div>
+                </div>
+            `;
+            document.getElementById('chatMessages').appendChild(phaseDiv);
+            scrollToBottom();
+        }
+
+        // Add bot message
+        function addBotMessage(text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.innerHTML = text.replace(/\n/g, '<br>');
+            
+            messageDiv.appendChild(contentDiv);
+            document.getElementById('chatMessages').appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Add user message
+        function addUserMessage(text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message user';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.textContent = text;
+            
+            messageDiv.appendChild(contentDiv);
+            document.getElementById('chatMessages').appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Show options
+        function showOptions(options, currentStepName) {
+            const optionsDiv = document.createElement('div');
+            optionsDiv.className = 'options-container';
+            
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'option-button';
+                if (option.value === 'weet niet') {
+                    button.className += ' neutral';
+                }
+                button.textContent = option.text;
+                button.onclick = () => handleOptionClick(option, currentStepName);
+                optionsDiv.appendChild(button);
+            });
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+            messageDiv.appendChild(optionsDiv);
+            document.getElementById('chatMessages').appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Handle option click
+        function handleOptionClick(option, currentStepName) {
+            addUserMessage(option.text);
+            
+            // Store response
+            responses[currentStepName] = option.value;
+            
+            // Update progress
+            const totalSteps = Object.keys(processFlow).length - 2; // minus start and complete
+            const currentStepIndex = Object.keys(processFlow).indexOf(currentStepName);
+            progress = Math.min(100, (currentStepIndex / totalSteps) * 100);
+            
+            // Handle action if needed
+            if (option.action) {
+                setTimeout(() => {
+                    showAction(option.action, option.next);
+                }, 500);
+            } else if (option.next) {
+                setTimeout(() => {
+                    showStep(option.next);
+                }, 500);
+            }
+        }
+
+        // Show action
+        function showAction(actionName, nextStep) {
+            const action = actions[actionName];
+            
+            let actionHtml = `<div class="action-required">`;
+            actionHtml += `<strong>⚠️ Actie Vereist: ${action.title}</strong>`;
+            
+            if (action.warning) {
+                actionHtml += `<div class="warning-box">${action.warning}</div>`;
+            }
+            
+            actionHtml += `<ul style="margin-top: 10px;">`;
+            action.steps.forEach(step => {
+                actionHtml += `<li>${step}</li>`;
+            });
+            actionHtml += `</ul></div>`;
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+            messageDiv.innerHTML = `<div class="message-content">${actionHtml}</div>`;
+            document.getElementById('chatMessages').appendChild(messageDiv);
+            scrollToBottom();
+            
+            // Continue to next step after delay
+            setTimeout(() => {
+                addBotMessage("Laten we doorgaan met de volgende stap...");
+                setTimeout(() => {
+                    showStep(nextStep);
+                }, 1000);
+            }, 3000);
+        }
+
+        // Show progress bar
+        function showProgressBar() {
+            const progressHtml = `
+                <div class="process-indicator">
+                    <h3>📊 Projectontwikkeling Voortgang</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${progress}%"></div>
+                    </div>
+                    <p>Status: ${Math.round(progress)}% compleet</p>
+                </div>
+            `;
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+            messageDiv.innerHTML = `<div class="message-content">${progressHtml}</div>`;
+            document.getElementById('chatMessages').appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Show completion options
+        function showCompletionOptions() {
+            setTimeout(() => {
+                addBotMessage("Wil je een overzicht van je antwoorden zien?");
+                const options = [
+                    { text: "📋 Toon overzicht", action: "showSummary" },
+                    { text: "🔄 Opnieuw beginnen", action: "restart" },
+                    { text: "✅ Afsluiten", action: "close" }
+                ];
+                
+                const optionsDiv = document.createElement('div');
+                optionsDiv.className = 'options-container';
+                
+                options.forEach(option => {
+                    const button = document.createElement('button');
+                    button.className = 'option-button';
+                    button.textContent = option.text;
+                    button.onclick = () => handleCompletionAction(option.action);
+                    optionsDiv.appendChild(button);
+                });
+                
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message bot';
+                messageDiv.appendChild(optionsDiv);
+                document.getElementById('chatMessages').appendChild(messageDiv);
+                scrollToBottom();
+            }, 2000);
+        }
+
+        // Handle completion actions
+        function handleCompletionAction(action) {
+            if (action === 'showSummary') {
+                showSummary();
+            } else if (action === 'restart') {
+                location.reload();
+            } else if (action === 'close') {
+                addBotMessage("Bedankt voor het gebruiken van de Projectontwikkeling Assistent. Succes met je project! 👋");
+            }
+        }
+
+        // Show summary
+        function showSummary() {
+            let summaryHtml = `
+                <div class="info-box">
+                    <strong>📋 Overzicht van je project:</strong><br><br>
+                    <strong>Projecttype:</strong> ${projectType || 'Niet gespecificeerd'}<br><br>
+                    <strong>Aandachtspunten:</strong><br>
+            `;
+            
+            // Count actions needed
+            let actionsNeeded = [];
+            Object.entries(responses).forEach(([step, response]) => {
+                if (response === 'nee' || response === 'weet niet') {
+                    const stepConfig = processFlow[step];
+                    if (stepConfig && stepConfig.options) {
+                        const selectedOption = stepConfig.options.find(opt => opt.value === response);
+                        if (selectedOption && selectedOption.action) {
+                            const action = actions[selectedOption.action];
+                            if (action) {
+                                actionsNeeded.push(action.title);
+                            }
+                        }
+                    }
+                }
+            });
+            
+            if (actionsNeeded.length > 0) {
+                summaryHtml += '<ul>';
+                actionsNeeded.forEach(action => {
+                    summaryHtml += `<li>${action}</li>`;
+                });
+                summaryHtml += '</ul>';
+            } else {
+                summaryHtml += 'Geen openstaande acties - alles is in orde! ✅';
+            }
+            
+            summaryHtml += '</div>';
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+            messageDiv.innerHTML = `<div class="message-content">${summaryHtml}</div>`;
+            document.getElementById('chatMessages').appendChild(messageDiv);
+            scrollToBottom();
+            
+            // Show completion options again
+            setTimeout(() => {
+                showCompletionOptions();
+            }, 1500);
+        }
+
+        // Update progress
+        function updateProgress(newProgress) {
+            progress = Math.min(newProgress, 100);
+        }
+
+        // Scroll to bottom
+        function scrollToBottom() {
+            const chat = document.getElementById('chatMessages');
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        // Start when page loads
+        window.addEventListener('DOMContentLoaded', init);
+        
+        // Backup start
+        if (document.readyState === 'complete') {
+            setTimeout(init, 100);
+        }
+    </script>
+</body>
+</html>
