@@ -778,6 +778,19 @@
             // Store response
             responses[currentStepName] = option.value;
             
+            // Special handling for financing type
+            if (currentStepName === 'financing') {
+                projectType = option.text;
+            }
+            
+            // Store action if present
+            if (option.action) {
+                if (!responses.actions) {
+                    responses.actions = [];
+                }
+                responses.actions.push(option.action);
+            }
+            
             // Update progress
             const totalSteps = Object.keys(processFlow).length - 2; // minus start and complete
             const currentStepIndex = Object.keys(processFlow).indexOf(currentStepName);
@@ -892,25 +905,19 @@
                 <div class="info-box">
                     <strong>📋 Overzicht van je project:</strong><br><br>
                     <strong>Projecttype:</strong> ${projectType || 'Niet gespecificeerd'}<br><br>
-                    <strong>Aandachtspunten:</strong><br>
+                    <strong>Openstaande acties:</strong><br>
             `;
             
-            // Count actions needed
-            let actionsNeeded = [];
-            Object.entries(responses).forEach(([step, response]) => {
-                if (response === 'nee' || response === 'weet niet') {
-                    const stepConfig = processFlow[step];
-                    if (stepConfig && stepConfig.options) {
-                        const selectedOption = stepConfig.options.find(opt => opt.value === response);
-                        if (selectedOption && selectedOption.action) {
-                            const action = actions[selectedOption.action];
-                            if (action) {
-                                actionsNeeded.push(action.title);
-                            }
-                        }
+            // Get all actions that were triggered
+            const actionsNeeded = [];
+            if (responses.actions && responses.actions.length > 0) {
+                responses.actions.forEach(actionName => {
+                    const action = actions[actionName];
+                    if (action && !actionsNeeded.includes(action.title)) {
+                        actionsNeeded.push(action.title);
                     }
-                }
-            });
+                });
+            }
             
             if (actionsNeeded.length > 0) {
                 summaryHtml += '<ul>';
@@ -918,6 +925,7 @@
                     summaryHtml += `<li>${action}</li>`;
                 });
                 summaryHtml += '</ul>';
+                summaryHtml += `<br><strong>Totaal aantal acties: ${actionsNeeded.length}</strong>`;
             } else {
                 summaryHtml += 'Geen openstaande acties - alles is in orde! ✅';
             }
