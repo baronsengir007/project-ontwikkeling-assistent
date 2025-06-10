@@ -222,177 +222,177 @@
         let currentPhase = 1;
         let responses = {};
 
-        // Complete process flow based on Excel
+        // Complete process flow - GENERIC VERSION
         const processFlow = {
-            // START - Financieringstype
+            // START - Project type
             financing: {
-                message: "Welkom bij de Projectontwikkeling Assistent! 🚀\n\nLaten we beginnen met het type financiering voor je project.",
-                question: "Welke financieringstype gaat het om?",
+                message: "Welkom bij de Projectontwikkeling Assistent! 🚀\n\nLaten we beginnen met het type project.",
+                question: "Welk type project betreft het?",
                 options: [
-                    { text: "B2B", value: "b2b", next: "lead1" },
-                    { text: "Rijksbijdrage", value: "rijksbijdrage", next: "lead1" },
-                    { text: "Gemengd", value: "gemengd", next: "lead1" },
-                    { text: "EU", value: "eu", next: "lead1" }
+                    { text: "Type A", value: "typeA", next: "lead1" },
+                    { text: "Type B", value: "typeB", next: "lead1" },
+                    { text: "Type C", value: "typeC", next: "lead1" },
+                    { text: "Type D", value: "typeD", next: "lead1" }
                 ]
             },
 
-            // FASE 1: Lead registeren
+            // FASE 1: Initiatie
             lead1: {
-                phase: "1. Lead registeren",
-                question: "Is de lead geregistreerd in Dynamo?",
+                phase: "1. Project Initiatie",
+                question: "Is het project geregistreerd in het systeem?",
                 options: [
                     { text: "Ja", value: "ja", next: "lead2" },
-                    { text: "Nee", value: "nee", action: "registerLead", next: "lead2" }
+                    { text: "Nee", value: "nee", action: "registerProject", next: "lead2" }
                 ]
             },
             
             lead2: {
-                question: "Is de projectmanager aangewezen in Dynamo?",
+                question: "Is er een projectleider aangewezen?",
                 options: [
                     { text: "Ja", value: "ja", next: "lead3" },
-                    { text: "Nee", value: "nee", action: "assignPM", next: "lead3" }
+                    { text: "Nee", value: "nee", action: "assignLeader", next: "lead3" }
                 ]
             },
             
             lead3: {
-                question: "Is het projectteam aangewezen in Dynamo met de benodigde kennis?",
+                question: "Is het team samengesteld met de benodigde expertise?",
                 options: [
                     { text: "Ja", value: "ja", next: "opportunity1" },
-                    { text: "Nee", value: "nee", action: "assignTeam", next: "opportunity1" }
+                    { text: "Nee", value: "nee", action: "formTeam", next: "opportunity1" }
                 ]
             },
 
-            // FASE 2: Opportunity complementeren
+            // FASE 2: Planning
             opportunity1: {
-                phase: "2. Opportunity complementeren",
-                question: "Past de projectvraag bij de propositie/PMC in Dynamo?",
+                phase: "2. Project Planning",
+                question: "Past het project binnen de organisatiestrategie?",
                 options: [
                     { text: "Ja", value: "ja", next: "opportunity2" },
-                    { text: "Nee", value: "nee", action: "alignProposition", next: "opportunity2" }
+                    { text: "Nee", value: "nee", action: "alignStrategy", next: "opportunity2" }
                 ]
             },
             
             opportunity2: {
-                question: "Is het budget opgesteld?",
+                question: "Is het budget bepaald?",
                 options: [
                     { text: "Ja", value: "ja", next: "opportunity3" },
-                    { text: "Nee", value: "nee", action: "createBudget", next: "opportunity3" }
+                    { text: "Nee", value: "nee", action: "defineBudget", next: "opportunity3" }
                 ]
             },
             
             opportunity3: {
-                question: "Is het acquisitiebudget opgesteld?",
+                question: "Is de resource planning compleet?",
                 options: [
                     { text: "Ja", value: "ja", next: "opportunity4" },
-                    { text: "Nee", value: "nee", action: "createAcquisitionBudget", next: "opportunity4" }
+                    { text: "Nee", value: "nee", action: "planResources", next: "opportunity4" }
                 ]
             },
             
             opportunity4: {
-                question: "Is de verkoopprijs afgestemd met DM (Director/Market Manager)?",
+                question: "Is de prijsstelling goedgekeurd?",
                 options: [
                     { text: "Ja", value: "ja", next: "opportunity5" },
-                    { text: "Nee", value: "nee", action: "alignPrice", next: "opportunity5" }
+                    { text: "Nee", value: "nee", action: "approvepricing", next: "opportunity5" }
                 ]
             },
             
             opportunity5: {
-                question: "Heb je de (key)accountmanager geïnformeerd over dit project?",
+                question: "Zijn alle stakeholders geïnformeerd?",
                 options: [
                     { text: "Ja", value: "ja", next: "compliance1" },
-                    { text: "Nee", value: "nee", action: "informAccountManager", next: "compliance1" }
+                    { text: "Nee", value: "nee", action: "informStakeholders", next: "compliance1" }
                 ]
             },
 
-            // FASE 3: Wet- en regelgeving
+            // FASE 3: Compliance
             compliance1: {
-                phase: "3. Wet- en regelgeving",
-                question: "Is exporteren van dual-use technology van toepassing?",
+                phase: "3. Compliance Check",
+                question: "Zijn er export restricties van toepassing?",
                 options: [
-                    { text: "Ja", value: "ja", action: "secForm", next: "compliance2" },
+                    { text: "Ja", value: "ja", action: "exportCheck", next: "compliance2" },
                     { text: "Nee", value: "nee", next: "compliance2" }
                 ]
             },
             
             compliance2: {
-                question: "Zijn er bijzondere projecteisen volgens de wet- en regelgeving checklist?",
+                question: "Zijn er speciale vereisten volgens de checklist?",
                 options: [
-                    { text: "Ja", value: "ja", action: "checkSpecialRequirements", next: "compliance3" },
+                    { text: "Ja", value: "ja", action: "specialRequirements", next: "compliance3" },
                     { text: "Nee", value: "nee", next: "compliance3" }
                 ]
             },
             
             compliance3: {
-                question: "Zijn er privacy-gevoelige informatie/onderwerpen?",
+                question: "Is er sprake van gevoelige informatie?",
                 options: [
-                    { text: "Ja", value: "ja", action: "dpia", next: "compliance4" },
+                    { text: "Ja", value: "ja", action: "privacyAssessment", next: "compliance4" },
                     { text: "Nee", value: "nee", next: "compliance4" }
                 ]
             },
             
             compliance4: {
-                question: "Ga je werken met Data?",
+                question: "Wordt er gewerkt met data?",
                 options: [
-                    { text: "Ja", value: "ja", action: "dmp", next: "compliance5" },
+                    { text: "Ja", value: "ja", action: "dataManagement", next: "compliance5" },
                     { text: "Nee", value: "nee", next: "compliance5" }
                 ]
             },
             
             compliance5: {
-                question: "Is NGWI (Nederlandse Gedragscode Wetenschappelijke Integriteit) van toepassing?",
+                question: "Zijn er integriteitsrichtlijnen van toepassing?",
                 options: [
-                    { text: "Ja", value: "ja", action: "ngwi", next: "compliance6" },
+                    { text: "Ja", value: "ja", action: "integrityCheck", next: "compliance6" },
                     { text: "Nee", value: "nee", next: "compliance6" }
                 ]
             },
             
             compliance6: {
-                question: "Is BRRD (Bank Recovery and Resolution Directive) van toepassing?",
+                question: "Zijn er sectorspecifieke regels van toepassing?",
                 options: [
-                    { text: "Ja", value: "ja", action: "brrd", next: "compliance7" },
+                    { text: "Ja", value: "ja", action: "sectorRules", next: "compliance7" },
                     { text: "Nee", value: "nee", next: "compliance7" }
                 ]
             },
             
             compliance7: {
-                question: "Is er andere specifieke wet- en regelgeving van toepassing op jouw project?",
+                question: "Is er andere regelgeving van toepassing?",
                 options: [
-                    { text: "Ja", value: "ja", action: "complianceAdvice", next: "bidnobid" },
+                    { text: "Ja", value: "ja", action: "otherCompliance", next: "bidnobid" },
                     { text: "Nee", value: "nee", next: "bidnobid" },
                     { text: "Weet niet", value: "weet niet", action: "complianceAdvice", next: "bidnobid" }
                 ]
             },
 
-            // FASE 3.5: Bid/No bid besluit
+            // FASE 3.5: Go/No-Go
             bidnobid: {
-                phase: "3. Bid/No bid besluit",
-                question: "Is de bid/no-bid beslissing voorbereid? (duidelijkheid over budget, complexiteit, globaal risico, beslisser, behoefte van de klant, tijd)",
+                phase: "3. Go/No-Go Besluit",
+                question: "Is de go/no-go beslissing voorbereid?",
                 options: [
                     { text: "Ja", value: "ja", next: "proposal1" },
-                    { text: "Nee", value: "nee", action: "prepareBidDecision", next: "proposal1" }
+                    { text: "Nee", value: "nee", action: "prepareDecision", next: "proposal1" }
                 ]
             },
 
             // FASE 4: Voorstel
             proposal1: {
-                phase: "4. Voorstel uitbrengen",
-                question: "Worden de standaard Algemene Voorwaarden gebruikt?",
+                phase: "4. Voorstel Opstellen",
+                question: "Worden standaard voorwaarden gebruikt?",
                 options: [
                     { text: "Ja", value: "ja", next: "proposal2" },
-                    { text: "Nee", value: "nee", action: "legalContracting", next: "proposal2" }
+                    { text: "Nee", value: "nee", action: "customTerms", next: "proposal2" }
                 ]
             },
             
             proposal2: {
-                question: "Is het duidelijk wie het projectvoorstel gaat schrijven?",
+                question: "Is duidelijk wie het voorstel opstelt?",
                 options: [
                     { text: "Ja", value: "ja", next: "proposal3" },
-                    { text: "Nee", value: "nee", action: "assignProposalWriter", next: "proposal3" }
+                    { text: "Nee", value: "nee", action: "assignWriter", next: "proposal3" }
                 ]
             },
             
             proposal3: {
-                question: "Gebruik je het projectvoorstel template?",
+                question: "Wordt het standaard template gebruikt?",
                 options: [
                     { text: "Ja", value: "ja", next: "proposal4" },
                     { text: "Nee", value: "nee", action: "getTemplate", next: "proposal4" }
@@ -400,29 +400,29 @@
             },
             
             proposal4: {
-                question: "Is het doel geschreven in inspanningsverplichting?",
+                question: "Is de scope helder gedefinieerd?",
                 options: [
                     { text: "Ja", value: "ja", next: "proposal5" },
-                    { text: "Nee", value: "nee", action: "checkObligationType", next: "proposal5" },
-                    { text: "Weet niet", value: "weet niet", action: "legalContractingAdvice", next: "proposal5" }
+                    { text: "Nee", value: "nee", action: "defineScope", next: "proposal5" },
+                    { text: "Weet niet", value: "weet niet", action: "scopeAdvice", next: "proposal5" }
                 ]
             },
             
             proposal5: {
-                question: "Is capaciteit in voorstel opgenomen en afgestemd met Resource Manager?",
+                question: "Is de capaciteit geverifieerd?",
                 options: [
                     { text: "Ja", value: "ja", next: "proposal6" },
-                    { text: "Nee", value: "nee", action: "alignCapacity", next: "proposal6" },
+                    { text: "Nee", value: "nee", action: "verifyCapacity", next: "proposal6" },
                     { text: "Weet niet", value: "weet niet", action: "checkCapacity", next: "proposal6" }
                 ]
             },
             
             proposal6: {
-                question: "Is prijsstelling in offerte beoordeeld door Control/DM?",
+                question: "Is de finale review uitgevoerd?",
                 options: [
                     { text: "Ja", value: "ja", next: "complete" },
-                    { text: "Nee", value: "nee", action: "pricingReview", next: "complete" },
-                    { text: "Weet niet", value: "weet niet", action: "checkPricing", next: "complete" }
+                    { text: "Nee", value: "nee", action: "finalReview", next: "complete" },
+                    { text: "Weet niet", value: "weet niet", action: "checkReview", next: "complete" }
                 ]
             },
 
@@ -434,241 +434,248 @@
             }
         };
 
-        // Action definitions
+        // Action definitions - GENERIC VERSION
         const actions = {
-            // Lead registratie acties
-            registerLead: {
-                title: "Lead Registreren in Dynamo",
+            // Initiatie acties
+            registerProject: {
+                title: "Project Registreren",
                 steps: [
-                    "Open Dynamo systeem",
-                    "Ga naar 'Nieuwe Lead/Opportunity'",
-                    "Vul alle verplichte velden in",
-                    "Sla op en noteer het leadnummer"
+                    "Open het projectsysteem",
+                    "Maak nieuw project aan",
+                    "Vul basisgegevens in",
+                    "Sla op en noteer projectnummer"
                 ]
             },
-            assignPM: {
-                title: "Projectmanager Aanwijzen",
+            assignLeader: {
+                title: "Projectleider Aanwijzen",
                 steps: [
-                    "Overleg met Director/Division Manager",
-                    "Bepaal geschikte projectmanager",
-                    "Wijs toe in Dynamo",
-                    "Informeer projectmanager"
+                    "Overleg met management",
+                    "Selecteer geschikte kandidaat",
+                    "Formaliseer aanstelling",
+                    "Informeer betrokkenen"
                 ]
             },
-            assignTeam: {
-                title: "Projectteam Samenstellen",
+            formTeam: {
+                title: "Team Samenstellen",
                 steps: [
                     "Identificeer benodigde competenties",
-                    "Check beschikbaarheid teamleden",
-                    "Wijs team toe in Dynamo",
-                    "Plan kick-off meeting"
+                    "Check beschikbaarheid",
+                    "Stel team samen",
+                    "Plan opstartbijeenkomst"
                 ]
             },
 
-            // Opportunity acties
-            alignProposition: {
-                title: "Propositie Afstemmen",
+            // Planning acties
+            alignStrategy: {
+                title: "Strategie Afstemmen",
                 steps: [
-                    "Check propositie/PMC in Dynamo",
-                    "Analyseer projectvraag",
-                    "Stem af met Business Developer",
-                    "Update in Dynamo indien nodig"
+                    "Review organisatiestrategie",
+                    "Analyseer projectdoelen",
+                    "Identificeer alignment",
+                    "Documenteer uitkomst"
                 ]
             },
-            createBudget: {
-                title: "Budget Opstellen",
+            defineBudget: {
+                title: "Budget Bepalen",
                 steps: [
-                    "Maak inschatting van uren per fase",
-                    "Bereken materiaalkosten",
-                    "Voeg externe kosten toe",
-                    "Laat reviewen door Control"
+                    "Maak kosteninschatting",
+                    "Bereken benodigde resources",
+                    "Voeg marge toe",
+                    "Laat goedkeuren"
                 ]
             },
-            createAcquisitionBudget: {
-                title: "Acquisitiebudget Bepalen",
+            planResources: {
+                title: "Resources Plannen",
                 steps: [
-                    "Bepaal acquisitie-inspanning",
-                    "Bereken acquisitiekosten",
-                    "Vraag goedkeuring bij DM",
-                    "Registreer in Dynamo"
+                    "Bepaal benodigde capaciteit",
+                    "Check beschikbaarheid",
+                    "Maak planning",
+                    "Communiceer planning"
                 ]
             },
-            alignPrice: {
-                title: "Verkoopprijs Afstemmen",
+            approvepricing: {
+                title: "Prijsstelling Goedkeuren",
                 steps: [
                     "Bereken kostprijs",
-                    "Bepaal marge volgens richtlijnen",
-                    "Bespreek met Director/Market Manager",
-                    "Documenteer goedkeuring"
+                    "Bepaal verkoopprijs",
+                    "Vraag goedkeuring",
+                    "Documenteer besluit"
                 ]
             },
-            informAccountManager: {
-                title: "Account Manager Informeren",
+            informStakeholders: {
+                title: "Stakeholders Informeren",
                 steps: [
-                    "Identificeer (key) account manager",
-                    "Plan overleg",
+                    "Identificeer stakeholders",
+                    "Plan communicatie",
                     "Deel projectinformatie",
-                    "Noteer feedback in Dynamo"
+                    "Verzamel feedback"
                 ]
             },
 
             // Compliance acties
-            secForm: {
-                title: "SEC-formulier Invullen",
-                warning: "Dual-use technology export control van toepassing!",
+            exportCheck: {
+                title: "Export Check Uitvoeren",
+                warning: "Export restricties gedetecteerd!",
                 steps: [
-                    "Download SEC-formulier",
-                    "Vul alle velden volledig in",
-                    "Laat controleren door Export Control Officer",
-                    "Archiveer in projectdossier"
+                    "Vul export formulier in",
+                    "Check restrictielijst",
+                    "Vraag goedkeuring aan",
+                    "Archiveer documentatie"
                 ]
             },
-            checkSpecialRequirements: {
-                title: "Bijzondere Eisen Controleren",
+            specialRequirements: {
+                title: "Speciale Vereisten Controleren",
                 steps: [
-                    "Raadpleeg de wet- en regelgeving checklist",
-                    "Identificeer van toepassing zijnde eisen",
-                    "Overleg met Compliance Officer indien nodig",
-                    "Documenteer in projectdossier",
-                    "Informeer projectteam over specifieke vereisten"
+                    "Raadpleeg checklist",
+                    "Identificeer vereisten",
+                    "Documenteer bevindingen",
+                    "Informeer team"
                 ]
             },
-            dpia: {
-                title: "DPIA Uitvoeren",
-                warning: "Privacy-gevoelige informatie gedetecteerd!",
+            privacyAssessment: {
+                title: "Privacy Assessment",
+                warning: "Gevoelige informatie gedetecteerd!",
                 steps: [
-                    "Start DPIA procedure",
-                    "Vul DPIA template in",
-                    "Laat beoordelen door Privacy Officer",
-                    "Implementeer aanbevelingen"
+                    "Start privacy procedure",
+                    "Vul assessment in",
+                    "Implementeer maatregelen",
+                    "Krijg goedkeuring"
                 ]
             },
-            dmp: {
-                title: "Data Management Plan Opstellen",
+            dataManagement: {
+                title: "Data Management Plan",
                 steps: [
-                    "Gebruik DMP template",
-                    "Beschrijf data verzameling en opslag",
-                    "Definieer data governance",
-                    "Laat goedkeuren door Data Steward"
+                    "Gebruik data template",
+                    "Beschrijf data gebruik",
+                    "Definieer beveiliging",
+                    "Laat goedkeuren"
                 ]
             },
-            ngwi: {
-                title: "NGWI Compliance",
+            integrityCheck: {
+                title: "Integriteitscheck",
                 steps: [
-                    "Check NGWI richtlijnen",
-                    "Zorg voor wetenschappelijke integriteit",
-                    "Documenteer onderzoeksprotocol",
-                    "Informeer onderzoeksteam"
+                    "Check richtlijnen",
+                    "Zorg voor compliance",
+                    "Documenteer proces",
+                    "Informeer team"
                 ]
             },
-            brrd: {
-                title: "BRRD Advies",
+            sectorRules: {
+                title: "Sectorspecifieke Regels",
                 steps: [
-                    "Vraag BRRD advies aan",
-                    "Wacht op beoordeling",
-                    "Implementeer aanbevelingen",
+                    "Identificeer sector regels",
+                    "Check compliance",
+                    "Implementeer vereisten",
+                    "Documenteer"
+                ]
+            },
+            otherCompliance: {
+                title: "Overige Compliance",
+                steps: [
+                    "Identificeer regelgeving",
+                    "Vraag advies",
+                    "Implementeer maatregelen",
                     "Documenteer compliance"
                 ]
             },
             complianceAdvice: {
-                title: "Compliance Advies Vragen",
+                title: "Compliance Advies",
                 steps: [
-                    "Contacteer Legal/Compliance",
-                    "Beschrijf projectspecifieke aspecten",
-                    "Wacht op advies",
+                    "Contacteer compliance team",
+                    "Beschrijf situatie",
+                    "Ontvang advies",
                     "Implementeer aanbevelingen"
                 ]
             },
 
-            // Bid/No-bid acties
-            prepareBidDecision: {
-                title: "Bid/No-bid Beslissing Voorbereiden",
+            // Go/No-go acties
+            prepareDecision: {
+                title: "Beslissing Voorbereiden",
                 steps: [
-                    "Analyseer projectcomplexiteit",
-                    "Identificeer risico's",
-                    "Bepaal resource behoefte",
-                    "Maak go/no-go advies",
-                    "Plan beslismoment met DM"
+                    "Analyseer risico's",
+                    "Bepaal haalbaarheid",
+                    "Maak advies",
+                    "Plan beslismoment"
                 ]
             },
 
             // Voorstel acties
-            legalContracting: {
-                title: "Legal Contracting Inschakelen",
+            customTerms: {
+                title: "Aangepaste Voorwaarden",
                 warning: "Afwijkende voorwaarden!",
                 steps: [
-                    "Contacteer Legal Contracting",
-                    "Deel klantvoorwaarden",
-                    "Wacht op juridisch advies",
+                    "Contacteer juridisch",
+                    "Deel voorwaarden",
+                    "Ontvang advies",
                     "Verwerk in voorstel"
                 ]
             },
-            assignProposalWriter: {
-                title: "Voorstelschrijver Aanwijzen",
+            assignWriter: {
+                title: "Schrijver Aanwijzen",
                 steps: [
-                    "Overleg met BD/Opportunity Manager",
-                    "Bepaal wie voorstel schrijft",
+                    "Bepaal wie schrijft",
                     "Maak planning",
-                    "Deel relevante informatie"
+                    "Deel informatie",
+                    "Start proces"
                 ]
             },
             getTemplate: {
                 title: "Template Gebruiken",
                 steps: [
-                    "Download projectvoorstel template",
-                    "Kies juiste template voor projecttype",
-                    "Pas aan voor specifieke situatie"
+                    "Download template",
+                    "Kies juiste versie",
+                    "Pas aan voor project"
                 ]
             },
-            checkObligationType: {
-                title: "Type Verplichting Controleren",
+            defineScope: {
+                title: "Scope Definiëren",
                 steps: [
-                    "Check of inspanningsverplichting juist is",
-                    "Bij resultaatverplichting: overleg met Legal",
-                    "Pas formulering aan indien nodig"
+                    "Bepaal projectgrenzen",
+                    "Definieer deliverables",
+                    "Documenteer scope",
+                    "Krijg akkoord"
                 ]
             },
-            legalContractingAdvice: {
-                title: "Legal Advies Vragen",
+            scopeAdvice: {
+                title: "Scope Advies",
                 steps: [
-                    "Contacteer Legal Contracting",
-                    "Leg situatie uit",
-                    "Wacht op advies",
-                    "Pas voorstel aan"
+                    "Vraag expertadvies",
+                    "Review scope",
+                    "Pas aan indien nodig"
                 ]
             },
-            alignCapacity: {
-                title: "Capaciteit Afstemmen",
+            verifyCapacity: {
+                title: "Capaciteit Verifiëren",
                 steps: [
-                    "Check beschikbaarheid team",
-                    "Overleg met Resource Manager",
-                    "Update capaciteitsplanning",
-                    "Verwerk in voorstel"
+                    "Check beschikbaarheid",
+                    "Bevestig planning",
+                    "Update voorstel",
+                    "Communiceer"
                 ]
             },
             checkCapacity: {
-                title: "Capaciteit Verifiëren",
+                title: "Capaciteit Controleren",
                 steps: [
-                    "Controleer of capaciteit is opgenomen",
-                    "Verifieer bij Resource Manager",
+                    "Verifieer planning",
+                    "Check resources",
                     "Update indien nodig"
                 ]
             },
-            pricingReview: {
-                title: "Prijsstelling Laten Beoordelen",
+            finalReview: {
+                title: "Finale Review",
                 steps: [
-                    "Deel calculatie met Control",
-                    "Bespreek met Director/Market Manager",
-                    "Krijg formele goedkeuring",
-                    "Documenteer besluit"
+                    "Deel concept",
+                    "Verzamel feedback",
+                    "Verwerk aanpassingen",
+                    "Finaliseer document"
                 ]
             },
-            checkPricing: {
-                title: "Prijsstelling Controleren",
+            checkReview: {
+                title: "Review Status",
                 steps: [
-                    "Verifieer of pricing is beoordeeld",
-                    "Check bij Control/DM",
-                    "Alsnog laten beoordelen indien nodig"
+                    "Check reviewstatus",
+                    "Identificeer hiaten",
+                    "Organiseer review"
                 ]
             }
         };
@@ -778,7 +785,7 @@
             // Store response
             responses[currentStepName] = option.value;
             
-            // Special handling for financing type
+            // Special handling for project type
             if (currentStepName === 'financing') {
                 projectType = option.text;
             }
@@ -792,7 +799,7 @@
             }
             
             // Update progress
-            const totalSteps = Object.keys(processFlow).length - 2; // minus start and complete
+            const totalSteps = Object.keys(processFlow).length - 2;
             const currentStepIndex = Object.keys(processFlow).indexOf(currentStepName);
             progress = Math.min(100, (currentStepIndex / totalSteps) * 100);
             
